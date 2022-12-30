@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+    webserver:
+        build:
+            target: webserver
+        volumes:
+            - ./public:/app/public
+            - run-php:/var/run/php
+        ports:
+            - '80:8080'
+            - '443:443'
+    backend:
+        build:
+            target: backend
+        env_file:
+            - .env
+        volumes:
+            - .:/app
+            - run-php:/var/run/php
+    composer:
+        build:
+            target: backend
+        command: composer install
+        volumes:
+            - .:/app
+    postgresql:
+        image: postgres:15-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE}
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - "${DB_PORT}:5432"
+        volumes:
+            - .environment/db:/var/lib/postgresql/data
+volumes:
+    run-php:
